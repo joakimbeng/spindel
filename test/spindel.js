@@ -92,9 +92,10 @@ test('error response', async t => {
 	t.is(res.hrefs.length, 0);
 });
 
-test('transformHtml option', async t => {
+test('transformHtml option (sync version)', async t => {
 	t.plan(5);
 
+	nock('http://a.domain.com').get('/').reply(200, 'A domain');
 	nock('http://another.domain.com')
 		.get('/')
 		.reply(200, `
@@ -121,6 +122,48 @@ test('transformHtml option', async t => {
 			const $ = cheerio.load(body);
 			const main = $('main');
 			return main.length ? main.html() : body;
+		}
+	});
+
+	t.is(rest.length, 1);
+	t.is(res.statusCode, 200);
+	t.is(res.hrefs.length, 1);
+	t.is(res.hrefs[0], 'http://a.domain.com');
+	t.false(notImportant.isDone());
+});
+
+test('transformHtml option (promise version)', async t => {
+	t.plan(5);
+
+	nock('http://a.domain.com').get('/').reply(200, 'A domain');
+	nock('http://yetanother.domain.com')
+		.get('/')
+		.reply(200, `
+			<html>
+				<body>
+					<main>
+						<a href="http://a.domain.com">Hello world!</a>
+					</main>
+					<aside>
+						<a href="http://not-important.com">Not important</a>
+					</aside>
+				</body>
+			</html>
+		`, {
+			'Content-Type': 'text/html'
+		});
+
+	const notImportant = nock('http://not-important.com')
+		.get('/')
+		.reply(404);
+
+	const [res, ...rest] = await spindel('http://yetanother.domain.com', {
+		transformHtml(body) {
+			return new Promise(resolve => {
+				const $ = cheerio.load(body);
+				const main = $('main');
+				resolve(main.length ? main.html() : body);
+			});
 		}
 	});
 

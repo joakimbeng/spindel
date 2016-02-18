@@ -47,18 +47,24 @@ Spindel.prototype._read = function () {
 			this.url = url;
 			return got(url)
 				.then(res => {
-					const transformedHtml = isHtml(res.headers) ? this.transformHtml(res.body, url, res) : null;
-					const hrefs = transformedHtml ? getHrefs(transformedHtml) : [];
-					return this.queue.pushAll(hrefs, url)
-						.then(() => this.push({
-							url,
-							statusCode: res.statusCode,
-							statusMessage: res.statusMessage,
-							body: res.body,
-							headers: res.headers,
-							hrefs,
-							transformedHtml
-						}));
+					return Promise.resolve(
+						isHtml(res.headers) ?
+						this.transformHtml(res.body, url, res) :
+						null
+					)
+					.then(transformedHtml => {
+						const hrefs = transformedHtml ? getHrefs(transformedHtml) : [];
+						return this.queue.pushAll(hrefs, url)
+							.then(() => this.push({
+								url,
+								statusCode: res.statusCode,
+								statusMessage: res.statusMessage,
+								body: res.body,
+								headers: res.headers,
+								hrefs,
+								transformedHtml
+							}));
+					});
 				})
 				.catch(err => {
 					if (err.statusCode) {

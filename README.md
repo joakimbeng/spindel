@@ -75,6 +75,7 @@ stream.on('data', res => {
 
 **Returns:** [`stream.Readable`](https://nodejs.org/api/stream.html#stream_class_stream_readable) which emits [response objects](#streamed-response-objects) on the `'data'` event.
 
+
 #### Options
 
 ##### `options.transformHtml`
@@ -89,6 +90,8 @@ stream.on('data', res => {
 | body | `String` | The response body |
 | url | `String` | The url for the page being crawled
 | res | `Object` | The full [response](https://nodejs.org/api/http.html#http_class_http_incomingmessage) object |
+
+**Return value:** `Any` or `Promise<Any>`.
 
 For responses containing HTML (i.e. having a content-type which begins with `text/` and ends with `html`) this function will be run and its return value will be set to `transformedHtml` in the [response object](#streamed-response-objects).
 
@@ -113,7 +116,8 @@ A response object has the format:
 
 A queue implementation consists of two functions `popUrl` and `pushUrl`.
 
-##### `popUrl`
+
+##### `queue.popUrl`
 
 **Type:** `function`
 
@@ -125,7 +129,8 @@ A queue implementation consists of two functions `popUrl` and `pushUrl`.
 
 **Should return:** `String` or `Promise<String>` to continue crawling or `null` or `Promise<null>` to stop crawling.
 
-##### `pushUrl`
+
+##### `queue.pushUrl`
 
 **Type:** `function`
 
@@ -137,6 +142,7 @@ A queue implementation consists of two functions `popUrl` and `pushUrl`.
 | referral | `String` | The url for the current crawl |
 
 **Should return:** nothing or `Promise`.
+
 
 ##### Example of the internal ArrayQueue
 
