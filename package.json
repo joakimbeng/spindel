@@ -1,0 +1,45 @@
+{
+  "name": "spindel",
+  "version": "0.1.0",
+  "description": "A web crawler/spider",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "xo && ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joakimbeng/spindel.git"
+  },
+  "keywords": [
+    "spider",
+    "crawler",
+    "web",
+    "crawler",
+    "www",
+    "hyperlinks",
+    "links",
+    "crawl"
+  ],
+  "author": "Joakim Carlstein <joakim.carlstein@gmail.com> (http://joakim.beng.se/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joakimbeng/spindel/issues"
+  },
+  "homepage": "https://github.com/joakimbeng/spindel#readme",
+  "dependencies": {
+    "arrify": "^1.0.1",
+    "get-hrefs": "^1.0.2",
+    "got": "^6.1.1",
+    "promise-reduce": "^2.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.11.0",
+    "cheerio": "^0.20.0",
+    "nock": "^7.2.1",
+    "stream-to-array": "^2.2.1",
+    "xo": "^0.12.1"
+  }
+}
