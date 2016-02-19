@@ -56,6 +56,42 @@ test('html response with links', async t => {
 	t.is(aRes.hrefs.length, 0);
 });
 
+test('html response with relative links', async t => {
+	t.plan(5);
+
+	nock('http://yetanother.domain.com')
+		.get('/')
+		.reply(200, `
+			<html>
+				<body>
+					<a href="/hello">Hello world!</a>
+				</body>
+			</html>
+		`, {
+			'Content-Type': 'text/html'
+		});
+
+	nock('http://yetanother.domain.com')
+		.get('/hello')
+		.reply(200, `
+			<html>
+				<body>
+					Hello!
+				</body>
+			</html>
+		`, {
+			'Content-Type': 'text/html'
+		});
+
+	const [yetRes, helloRes, ...rest] = await spindel('http://yetanother.domain.com');
+
+	t.is(rest.length, 0);
+	t.is(yetRes.statusCode, 200);
+	t.is(yetRes.hrefs.length, 1);
+	t.is(helloRes.statusCode, 200);
+	t.is(helloRes.hrefs.length, 0);
+});
+
 test('non html response', async t => {
 	t.plan(3);
 

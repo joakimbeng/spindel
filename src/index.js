@@ -60,7 +60,7 @@ Spindel.prototype._read = function () {
 						null
 					)
 					.then(transformedHtml => {
-						const hrefs = transformedHtml ? getHrefs(transformedHtml) : [];
+						const hrefs = transformedHtml ? getHrefs(transformedHtml, {baseUrl: url}) : [];
 						return this.queue.pushAll(hrefs, url)
 							.then(() => this.push({
 								url,
