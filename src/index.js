@@ -6,7 +6,7 @@ const got = require('got');
 const getHrefs = require('get-hrefs');
 const promiseReduce = require('promise-reduce');
 
-const ABORT = {code: 'EABORT'};
+const IGNORE = {code: 'EIGNORE'};
 const identity = val => val;
 
 function Spindel(queue, opts) {
@@ -51,7 +51,7 @@ Spindel.prototype._read = function () {
 			return got(url, this.gotOptions)
 				.catch(err => {
 					this.push(gotErrorToResponseObject(err, url));
-					throw ABORT;
+					throw IGNORE;
 				})
 				.then(res => {
 					return Promise.resolve(
@@ -75,7 +75,7 @@ Spindel.prototype._read = function () {
 				});
 		})
 		.catch(err => {
-			if (err === ABORT) {
+			if (err === IGNORE) {
 				return;
 			}
 			this.emit('error', err);
@@ -117,23 +117,12 @@ function isHtml(headers) {
 }
 
 function gotErrorToResponseObject(err, url) {
-	if (err.statusCode) {
-		return {
-			url,
-			statusCode: err.statusCode,
-			statusMessage: err.statusMessage,
-			body: err.response.body,
-			headers: err.response.headers,
-			hrefs: [],
-			transformedHtml: null
-		};
-	}
 	return {
 		url,
-		statusCode: null,
-		statusMessage: null,
-		body: null,
-		headers: null,
+		statusCode: err.statusCode || null,
+		statusMessage: err.statusMessage || null,
+		body: err.response && err.response.body,
+		headers: err.response && err.response.headers,
 		hrefs: [],
 		transformedHtml: null,
 		code: err.code,
