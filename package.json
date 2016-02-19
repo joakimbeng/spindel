@@ -1,6 +1,6 @@
 {
   "name": "spindel",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A web crawler/spider",
   "main": "src/index.js",
   "directories": {
