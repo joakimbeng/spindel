@@ -76,7 +76,7 @@ test('non html response', async t => {
 	t.is(res.hrefs.length, 0);
 });
 
-test('error response', async t => {
+test('http error response', async t => {
 	t.plan(3);
 
 	nock('http://errors.com')
@@ -92,10 +92,24 @@ test('error response', async t => {
 	t.is(res.hrefs.length, 0);
 });
 
+test('request error response', async t => {
+	t.plan(4);
+
+	nock('http://more.errors.com')
+		.get('/')
+		.replyWithError({code: 'ECONNREFUSED', message: '127.0.0.1'});
+
+	const [res, ...rest] = await spindel('http://more.errors.com/', {gotOptions: {retries: 0}});
+
+	t.is(rest.length, 0);
+	t.is(res.code, 'ECONNREFUSED');
+	t.is(res.message, '127.0.0.1');
+	t.is(res.hrefs.length, 0);
+});
+
 test('transformHtml option (sync version)', async t => {
 	t.plan(5);
 
-	nock('http://a.domain.com').get('/').reply(200, 'A domain');
 	nock('http://another.domain.com')
 		.get('/')
 		.reply(200, `
@@ -135,7 +149,6 @@ test('transformHtml option (sync version)', async t => {
 test('transformHtml option (promise version)', async t => {
 	t.plan(5);
 
-	nock('http://a.domain.com').get('/').reply(200, 'A domain');
 	nock('http://yetanother.domain.com')
 		.get('/')
 		.reply(200, `

@@ -80,7 +80,7 @@ stream.on('data', res => {
 
 ##### `options.transformHtml`
 
-**Type:** `function (body, url, res)`  
+**Type:** `Function`  
 **Default:** `noop`
 
 **Params:**
@@ -94,6 +94,14 @@ stream.on('data', res => {
 **Return value:** `Any` or `Promise<Any>`.
 
 For responses containing HTML (i.e. having a content-type which begins with `text/` and ends with `html`) this function will be run and its return value will be set to `transformedHtml` in the [response object](#streamed-response-objects).
+
+
+##### `options.gotOptions`
+
+**Type:** `Object`  
+**Default:** `{}`
+
+Options passed to [`got`](https://github.com/sindresorhus/got#options).
 
 
 #### Streamed response objects
@@ -111,6 +119,7 @@ A response object has the format:
 	transformedHtml: String // if content is HTML this contains the `body` after applying the `transformHtml` option function
 }
 ```
+
 
 #### Queue implementation
 

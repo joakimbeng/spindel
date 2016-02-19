@@ -6,6 +6,7 @@ const got = require('got');
 const getHrefs = require('get-hrefs');
 const promiseReduce = require('promise-reduce');
 
+const ABORT = {code: 'EABORT'};
 const identity = val => val;
 
 function Spindel(queue, opts) {
@@ -14,6 +15,8 @@ function Spindel(queue, opts) {
 	stream.Readable.call(this, {objectMode: true});
 
 	this.url = null;
+
+	this.gotOptions = opts.gotOptions || {};
 
 	this.queue = {
 		pushUrl: queue.pushUrl,
@@ -45,7 +48,11 @@ Spindel.prototype._read = function () {
 				return this.push(null);
 			}
 			this.url = url;
-			return got(url)
+			return got(url, this.gotOptions)
+				.catch(err => {
+					this.push(gotErrorToResponseObject(err, url));
+					throw ABORT;
+				})
 				.then(res => {
 					return Promise.resolve(
 						isHtml(res.headers) ?
@@ -65,24 +72,14 @@ Spindel.prototype._read = function () {
 								transformedHtml
 							}));
 					});
-				})
-				.catch(err => {
-					if (err.statusCode) {
-						this.push({
-							url,
-							statusCode: err.statusCode,
-							statusMessage: err.statusMessage,
-							body: err.response.body,
-							headers: err.response.headers,
-							hrefs: [],
-							transformedHtml: null
-						});
-					} else {
-						throw err;
-					}
 				});
 		})
-		.catch(err => this.emit('error', err));
+		.catch(err => {
+			if (err === ABORT) {
+				return;
+			}
+			this.emit('error', err);
+		});
 };
 
 module.exports = exports = function spindel(urls, opts) {
@@ -117,4 +114,29 @@ function isHtml(headers) {
 	const contentType = headers['content-type'] || '';
 	const parts = contentType.split(';');
 	return /^text\/\w*html$/.test(parts[0].trim());
+}
+
+function gotErrorToResponseObject(err, url) {
+	if (err.statusCode) {
+		return {
+			url,
+			statusCode: err.statusCode,
+			statusMessage: err.statusMessage,
+			body: err.response.body,
+			headers: err.response.headers,
+			hrefs: [],
+			transformedHtml: null
+		};
+	}
+	return {
+		url,
+		statusCode: null,
+		statusMessage: null,
+		body: null,
+		headers: null,
+		hrefs: [],
+		transformedHtml: null,
+		code: err.code,
+		message: err.message
+	};
 }
